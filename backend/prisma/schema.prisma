@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int      @id @default(autoincrement()) // 🔹 ทึบ
+  email             String   @unique // 🔹 ทึบ
+  phone             String? // 🔸 โปร่ง
+  password          String // 🔹 ทึบ
+  role              String   @default("ADMIN") // 🔹 ทึบ
+  createdAt         DateTime @default(now()) // 🔹 ทึบ
+  username          String   @unique // 🔹 ทึบ
+  name              String? // 🔸 โปร่ง
+  isVerified        Boolean  @default(false) // 🔹 ทึบ
+  verificationToken String? // 🔸 โปร่ง
+
+  devices Device[]
+}
+
+model Device {
+  id             Int     @id @default(autoincrement()) // 🔹 ทึบ
+  deviceId       String  @unique // 🔹 ทึบ
+  name           String // 🔹 ทึบ
+  alarmDuration  Int     @default(30) // 🔹 ทึบ
+  currentBattery Int? // 🔸 โปร่ง
+  currentStatus  String? // 🔸 โปร่ง
+  lat            Float? // 🔸 โปร่ง
+  lng            Float? // 🔸 โปร่ง
+
+  // 🎯 จุดที่แก้ให้ตรงรูป: ในรูปเป็น "ทึบ" แปลว่าห้ามว่าง ผมเลยใส่ @default ให้
+  isGeofenceActive Boolean @default(false) // 🔹 ทึบ
+  geofenceLat      Float   @default(0) // 🔹 ทึบ
+  geofenceLng      Float   @default(0) // 🔹 ทึบ
+  geofenceRadius   Int     @default(200) // 🔹 ทึบ
+
+  userId      Int? // 🔹 ทึบ
+  publicToken String?  @unique // 🔸 โปร่ง
+  createdAt   DateTime @default(now()) // 🔹 ทึบ
+  updatedAt   DateTime @updatedAt // 🔹 ทึบ
+
+  user              User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alerts            Alert[]
+  locationHistories LocationHistory[]
+  shares            DeviceShare[]
+}
+
+model Alert {
+  id        String   @id @default(uuid()) // 🔹 ทึบ
+  deviceId  String // 🔹 ทึบ
+  type      String // 🔹 ทึบ
+  lat       Float? // 🔸 โปร่ง
+  lng       Float? // 🔸 โปร่ง
+  createdAt DateTime @default(now()) // 🔹 ทึบ
+
+  device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+}
+
+model LocationHistory {
+  id       Int    @id @default(autoincrement()) // 🔹 ทึบ
+  deviceId String // 🔹 ทึบ
+  lat Float // 🔹 ทึบ
+  lng Float // 🔹 ทึบ
+  battery   Int? // 🔸 โปร่ง
+  createdAt DateTime @default(now()) // 🔹 ทึบ
+  device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+}
+
+model DeviceShare {
+  id           Int       @id @default(autoincrement()) // 🔹 ทึบ
+  token        String    @unique // 🔹 ทึบ
+  label        String? // 🔸 โปร่ง
+  isActive     Boolean   @default(true) // 🔹 ทึบ
+  createdAt    DateTime  @default(now()) // 🔹 ทึบ
+  deviceId     String // 🔹 ทึบ
+  phone        String? // 🔸 โปร่ง
+  email        String? // 🔸 โปร่ง
+  device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+}
