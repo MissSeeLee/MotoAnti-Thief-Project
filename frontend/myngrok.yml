@@ -1,0 +1,12 @@
+version: "2"
+authtoken: 34PXsb24BTnqe3u6BVU9w9JHHpG_3qBJF9Z3Ej1pAKyRKBNyr
+tunnels:
+  backend:
+    proto: http
+    addr: 3000
+    domain: gerald-unstressed-unecliptically.ngrok-free.dev
+
+  frontend:
+    proto: http
+    addr: 5173
+    # ❌ ห้ามมีคำว่า domain ตรงนี้เด็ดขาด!!

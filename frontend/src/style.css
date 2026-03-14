@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================
+   ✅ APP SETTINGS
+   ========================================= */
+:root {
+  --app-height: 100dvh;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%; 
+  height: var(--app-height); 
+  overflow: hidden; 
+  touch-action: pan-x pan-y;
+  -webkit-font-smoothing: antialiased;
+  background-color: #f1f5f9; 
+  
+  /* ✅ บังคับใช้ฟอนต์ Prompt ทั้งเว็บตรงนี้ */
+  font-family: 'Prompt', sans-serif;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* =========================================
+   ✅ CUSTOM STYLES
+   ========================================= */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+input, textarea, select {
+  color: #0f172a; 
+  /* ให้ Input ใช้ Prompt ด้วย */
+  font-family: 'Prompt', sans-serif; 
+}
+
+::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    color: transparent;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* ลบ Appearance เดิมออก เพื่อความชัวร์ */
+input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+/* Safe Area Helpers */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
