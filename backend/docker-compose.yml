@@ -1,31 +1,21 @@
 version: '3'
 
 services:
-  # 1. แอปของคุณ
+  # 1. แอปหลังบ้านของคุณ (Node.js API)
   app:
     build: .
     restart: always
     container_name: my-iot-app
-    # 🔥 เพิ่มบรรทัดนี้เพื่อให้ Docker อ่านไฟล์ .env ของคุณ
+    # 🔥 เปิดประตูให้โลกภายนอกยิงข้อมูลเข้า VPS ผ่านพอร์ต 3000 ได้
+    ports:
+      - "3000:3000"
+    # 🔥 ดึงรหัสผ่านจากไฟล์ .env
     env_file:
       - .env
     networks:
       - iot_net
 
-  # 2. ตัวขุดอุโมงค์ Cloudflare
-  tunnel:
-    image: cloudflare/cloudflared
-    restart: always
-    container_name: cloudflare-tunnel
-    command: tunnel run
-    environment:
-      - TUNNEL_TOKEN=eyJhIjoiNzY0OTgxNDc5ODMxNWRmNGM0ODEzY2E1MzlhOGJmN2EiLCJ0IjoiNWNhOWQ0OTktMjc2Yi00YmM5LWEzMDQtYTI3OTg1NTEyYWVjIiwicyI6IlpqUXdaV0UxWmprdFkyWTJZUzAwTUdFd0xUZ3hPR1l0T0RBNE1EYzNOR015WkRBeCJ9
-    networks:
-      - iot_net
-    depends_on:
-      - app
-
-# 🔥 เพิ่มส่วนนี้เพื่อให้ Container คุยกันเองได้ชัวร์ๆ
+# 🔥 Network ให้ Container คุยกันเอง (เผื่ออนาคตลูกพี่เพิ่ม Database ลงไป)
 networks:
   iot_net:
     driver: bridge
