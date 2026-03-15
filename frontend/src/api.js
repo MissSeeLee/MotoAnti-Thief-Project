@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  // ✅ จุดที่แก้: ตั้งเป็น '/api' เพื่อให้มันวิ่งเข้าหลังบ้านถูกต้อง
-  baseURL: 'https://motoanti-thief.artip.site/api', 
+  // ✅ เปลี่ยนมาดึงค่าจาก Vercel แทน (ถ้ารันในเครื่องตัวเองให้ใช้ localhost)
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api', 
   
   headers: {
     'Content-Type': 'application/json',
