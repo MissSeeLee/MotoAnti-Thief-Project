@@ -45,8 +45,7 @@
         
         <button @click.stop="toggleTracking"
                 class="btn btn-circle btn-sm border-none shadow-sm transition-colors"
-                :class="isTracking ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'"
-                :title="isTracking ? 'ปิดโหมดตามติด' : 'เปิดโหมดตามติด'">
+                :class="isTracking ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
             <path fill-rule="evenodd" d="M11.99 2.25a.75.75 0 01.75.75v1.516a8.256 8.256 0 017.001 7.001h1.516a.75.75 0 010 1.5h-1.516a8.256 8.256 0 01-7.001 7.001v1.516a.75.75 0 01-1.5 0v-1.516a8.256 8.256 0 01-7.001-7.001H2.734a.75.75 0 010-1.5h1.516a8.256 8.256 0 017.001-7.001V3a.75.75 0 01.74-.75zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
           </svg>
@@ -71,12 +70,12 @@
       </div>
 
       <a v-if="deviceInfo.lat && deviceInfo.lng" 
-   :href="`https://www.google.com/maps/search/?api=1&query=${deviceInfo.lat},${deviceInfo.lng}`" 
-   target="_blank"
-   class="mt-3 w-full flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all">
-   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 3.58-3.14c1.58-1.887 2.485-3.728 2.485-5.334 0-4.402-3.535-7.981-7.89-7.981-4.356 0-7.89 3.579-7.89 7.981 0 1.606.905 3.447 2.485 5.334a16.976 16.976 0 0 0 3.58 3.14ZM12 14.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" clip-rule="evenodd" /></svg>
-   Navigate (Google Maps)
-</a>
+         :href="`https://www.google.com/maps/search/?api=1&query=${deviceInfo.lat},${deviceInfo.lng}`" 
+         target="_blank"
+         class="mt-3 w-full flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all">
+         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 3.58-3.14c1.58-1.887 2.485-3.728 2.485-5.334 0-4.402-3.535-7.981-7.89-7.981-4.356 0-7.89 3.579-7.89 7.981 0 1.606.905 3.447 2.485 5.334a16.976 16.976 0 0 0 3.58 3.14ZM12 14.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" clip-rule="evenodd" /></svg>
+         Navigate (Google Maps)
+      </a>
     </div>
 
     <div class="absolute bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[400px] z-10 flex gap-3">
@@ -132,12 +131,13 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { io } from "socket.io-client";
-import axios from 'axios';
+import apiClient from '../api.js'; // 🔥 เปลี่ยนจาก axios มาใช้ apiClient ตัวที่เราแก้ baseURL ไว้
 import MapViewer from '../components/MapViewer.vue';
 
 const route = useRoute();
 const token = route.params.token;
 
+// ดึงค่า VITE_API_URL มาใช้สำหรับ Socket (ถ้าไม่มีจะใช้โดเมนปัจจุบัน)
 const socketUrl = import.meta.env.VITE_API_URL || window.location.origin;
 const socket = io(socketUrl, {
   path: "/socket.io/",
@@ -170,7 +170,7 @@ const deviceArray = computed(() => {
   }];
 });
 
-// Toast Logic
+// Toast Notification System
 const showToast = ref(false);
 const toastData = reactive({ title: "", message: "", icon: "", colorClass: "" });
 
@@ -202,9 +202,10 @@ const toggleTracking = () => {
   }
 };
 
+// 🔥 แก้ไขพาร์ทการเรียกข้อมูล (ตัด /api ออกเพราะมีใน baseURL แล้ว)
 const fetchInitialData = async () => {
   try {
-    const res = await axios.get(`/api/sharing/live/${token}`); // ใช้ API หลักตัวนี้เลย ครบจบ
+    const res = await apiClient.get(`/sharing/live/${token}`); 
     if (res.data.success) {
       deviceInfo.value = res.data.device;
       subscriber.value = res.data.subscriber || { phone: '', email: '' };
@@ -240,10 +241,11 @@ const fetchInitialData = async () => {
   }
 };
 
+// 🔥 แก้ไขพาร์ทส่งสัญญาณค้นหา (ตัด /api ออก)
 const triggerFindCar = async () => {
   loadingFind.value = true;
   try {
-    await axios.post(`/api/sharing/find/${token}`);
+    await apiClient.post(`/sharing/find/${token}`);
     triggerToast("Sent", "ส่งคำสั่งค้นหารถเรียบร้อย", "📢", "alert-info");
   } catch (e) {
     triggerToast("Error", "ส่งคำสั่งไม่สำเร็จ", "❌", "alert-error");
@@ -252,9 +254,10 @@ const triggerFindCar = async () => {
   }
 };
 
+// 🔥 แก้ไขพาร์ทอัปเดตข้อมูล (ตัด /api ออก)
 const updateInfo = async () => {
   try {
-    await axios.put(`/api/sharing/subscriber/${token}`, subscriber.value);
+    await apiClient.put(`/sharing/subscriber/${token}`, subscriber.value);
     showEditModal.value = false;
     triggerToast("สำเร็จ", "อัปเดตข้อมูลรับแจ้งเตือนเรียบร้อย", "✅", "alert-success");
   } catch (err) {
@@ -289,7 +292,6 @@ onMounted(async () => {
       deviceInfo.value.currentBattery = data.battery ?? data.batt ?? data.currentBattery ?? deviceInfo.value.currentBattery;
       deviceInfo.value.lastUpdate = new Date(); 
       
-      // Update Status Priority
       if (data.status === 'THEFT' || data.status === 'CRASH') {
           currentStatus.value = data.status;
       } else if (rawIgn === "PARKED") {
@@ -322,7 +324,7 @@ onMounted(async () => {
        if (data.message.includes("FINDING START")) {
           triggerToast("Find Bike", "สั่งให้รถส่งเสียงร้อง...", "📢", "alert-info");
        } else if (data.message.includes("THEFT") || data.message.includes("ACCIDENT")) {
-          currentStatus.value = 'THEFT'; // Trigger Banner สีแดง
+          currentStatus.value = 'THEFT'; 
           triggerToast("Critical Alert", "มีการสั่นสะเทือนรุนแรง หรือเกิดเหตุขโมย!", "🚨", "alert-error");
        }
     }
