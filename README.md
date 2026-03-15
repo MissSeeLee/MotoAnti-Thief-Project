@@ -7,7 +7,7 @@ MotoAnti-Thief-Project
 ---
 
 ## ✨ คุณสมบัติหลัก (Features)
-- 📍 **Real-time Tracking:** ติดตามพิกัดรถบน Google Maps ได้ทันที
+- 📍 **Real-time Tracking:** ติดตามพิกัดรถได้ทันที
 - 🚨 **Theft/Crash Alert:** แจ้งเตือนเมื่อตรวจพบการเคลื่อนที่ผิดปกติหรืออุบัติเหตุ
 - 🔗 **Smart Sharing:** สร้างลิงก์ชั่วคราวให้ผู้อื่นติดตามรถได้โดยไม่ต้อง Log-in
 - 📊 **Status Monitoring:** ดูสถานะเครื่องยนต์ (IGN) และระดับแบตเตอรี่
