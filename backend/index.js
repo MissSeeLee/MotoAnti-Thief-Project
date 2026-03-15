@@ -23,14 +23,17 @@ const server = http.createServer(app);
 // ✅ 1. Setup Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://moto.artip.site"], 
-    methods: ["GET", "POST"]
+    // เพิ่มโดเมนใหม่เข้าไปในลิสต์ origin
+    origin: ["http://localhost:5173", "https://moto.artip.site", "https://motoanti-thief.artip.site"], 
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 // ✅ 2. Setup Middleware
 app.use(cors({
-    origin: ["http://localhost:5173", "https://moto.artip.site"],
+    // เพิ่มโดเมนใหม่เข้าไปตรงนี้ด้วยครับ
+    origin: ["http://localhost:5173", "https://moto.artip.site", "https://motoanti-thief.artip.site"],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
     allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'X-Requested-With'],
     credentials: true 
