@@ -75,6 +75,16 @@ if (fs.existsSync(distPath)) {
     });
 }
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Backend is alive',
+    uptime: Math.floor(process.uptime()) + ' seconds', // บอกว่ารันมานานแค่ไหนแล้ว
+    timestamp: new Date().toISOString(),
+    memoryUsage: process.memoryUsage().rss / 1024 / 1024 + ' MB' // เช็กว่ากินแรมไหม
+  });
+});
+
 // ==========================================
 // 🟢 ส่วนที่ 3: Start Server
 // ==========================================
