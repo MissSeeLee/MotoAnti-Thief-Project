@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const apiClient = axios.create({
   // 🔥 บังคับยิงไปที่โดเมน API หลังบ้านของเราโดยตรง!
-  baseURL: 'https://api.artip.site', 
+  baseURL: 'https://api.artip.site/api', 
   
   headers: {
     'Content-Type': 'application/json',
