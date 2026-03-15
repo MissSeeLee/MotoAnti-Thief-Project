@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  // ✅ เปลี่ยนมาดึงค่าจาก Vercel แทน (ถ้ารันในเครื่องตัวเองให้ใช้ localhost)
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api', 
+  // 🔥 บังคับยิงไปที่โดเมน API หลังบ้านของเราโดยตรง!
+  baseURL: 'https://api.artip.site', 
   
   headers: {
     'Content-Type': 'application/json',
