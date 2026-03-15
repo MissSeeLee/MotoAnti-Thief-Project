@@ -18,14 +18,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = http.createServer(app);
 
-// 1. กำหนด Origins ที่อนุญาตให้ชัดเจน
 const ALLOWED_ORIGINS = [
     "http://localhost:5173", 
     "https://moto.artip.site", 
     "https://motoanti-thief.artip.site"
 ];
 
-// ✅ 1. Setup Socket.IO (ย้ายมาใช้ตัวแปร ALLOWED_ORIGINS)
+// ✅ 1. Setup Socket.IO
 const io = new Server(server, {
   cors: {
     origin: ALLOWED_ORIGINS, 
@@ -46,18 +45,17 @@ app.use(cors({
 app.use(express.json());
 
 // ==========================================
-// 🟢 ส่วนที่ 1: API Routes (จัดลำดับใหม่ให้ชัดเจน)
+// 🟢 ส่วนที่ 1: API Routes
 // ==========================================
 
-// ตรวจสอบสุขภาพ Server
 app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Backend is alive' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
-app.use('/api', shareRoutes); // shareRoutes ควรอยู่ล่างสุดของกลุ่ม /api ถ้ามันมี path ทับซ้อน
+app.use('/api', shareRoutes); 
 
-// 🔥 ดักจับ API 404 (เฉพาะที่ขึ้นต้นด้วย /api แต่หา route ไม่เจอ)
-app.use('/api/*', (req, res) => {
+// 🔥 [แก้ไขจุดตาย!] สำหรับ Express 5: เปลี่ยนจาก /api/* เป็น /api/:path*
+app.all('/api/:path*', (req, res) => {
     res.status(404).json({ 
         error: "API Route Not Found", 
         path: req.originalUrl 
@@ -71,14 +69,16 @@ const distPath = path.join(__dirname, 'dist');
 
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-    // หน้าบ้าน SPA ต้อง fallback ไปที่ index.html
-    app.get('*', (req, res, next) => {
-        if (req.path.startsWith('/api')) return next(); // ถ้าเป็น API ให้ข้ามไป
+    
+    // 🔥 [แก้ไขจุดตายที่ 2!] สำหรับ Express 5: ใช้ชื่อพารามิเตอร์แทน * โล่งๆ
+    app.get('/:any*', (req, res, next) => {
+        // ถ้าขึ้นต้นด้วย /api ให้ข้ามไปหาตัวจัดการ API 404 ด้านบน
+        if (req.path.startsWith('/api')) return next(); 
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
     app.get('/', (req, res) => {
-        res.send("Backend Server is Running! (Frontend build not found)");
+        res.send("Backend Server is Running!");
     });
 }
 
@@ -88,6 +88,6 @@ if (fs.existsSync(distPath)) {
 startMqttWorker(io);
 
 server.listen(config.PORT, '0.0.0.0', () => {
-  console.log(`✅ Server ready on port ${config.PORT}`);
+  console.log(`✅ Server FIXED for Express 5 (Port: ${config.PORT})`);
   console.log(`📡 Allowed Origins: ${ALLOWED_ORIGINS.join(', ')}`);
 });
