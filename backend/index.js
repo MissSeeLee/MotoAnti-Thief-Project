@@ -18,14 +18,12 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = http.createServer(app);
 
-// 1. กำหนด Origins ที่อนุญาตให้ชัดเจน
 const ALLOWED_ORIGINS = [
     "http://localhost:5173", 
     "https://moto.artip.site", 
     "https://motoanti-thief.artip.site"
 ];
 
-// ✅ 1. Setup Socket.IO (ย้ายมาใช้ตัวแปร ALLOWED_ORIGINS)
 const io = new Server(server, {
   cors: {
     origin: ALLOWED_ORIGINS, 
@@ -35,7 +33,6 @@ const io = new Server(server, {
   path: "/socket.io/"
 });
 
-// ✅ 2. Setup Middleware
 app.use(cors({
     origin: ALLOWED_ORIGINS,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
@@ -46,35 +43,35 @@ app.use(cors({
 app.use(express.json());
 
 // ==========================================
-// 🟢 ส่วนที่ 1: API Routes (จัดลำดับใหม่ให้ชัดเจน)
+// 🟢 ส่วนที่ 1: API Routes
 // ==========================================
-
-// ตรวจสอบสุขภาพ Server
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Backend is alive' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
-app.use('/api', shareRoutes);
+app.use('/api', shareRoutes); 
 
-// 🔥 ดักจับ API 404 (เฉพาะที่ขึ้นต้นด้วย /api แต่หา route ไม่เจอ)
+// 🔥 ดัก 404 สำหรับ API (ไม่ใช้ดอกจัน)
 app.use('/api', (req, res) => {
     res.status(404).json({ error: "API Route Not Found" });
 });
 
 // ==========================================
-// 🟢 ส่วนที่ 2: Serve Frontend (Static Files)
+// 🟢 ส่วนที่ 2: Serve Frontend (SPA Fallback)
 // ==========================================
 const distPath = path.join(__dirname, 'dist');
 
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-
-    app.get('/:any*', (req, res, next) => {
-        if (req.path.startsWith('/api')) return next(); // ถ้าเป็น API ให้ข้ามไป
+    
+    // 🔥 ท่าไม้ตาย! ใช้ app.use แบบ "ไม่ใส่พาร์ทอะไรเลย" 
+    // ถ้าไม่มี Route ไหนตรง มันจะส่งไฟล์หน้าบ้านให้ทันที ไม่มีทางติด PathError 100%
+    app.use((req, res) => {
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
-    app.get('/', (req, res) => {
-        res.send("Backend Server is Running! (Frontend build not found)");
+    // 🔥 ใช้ app.use แบบไม่ใส่พาร์ทเหมือนกันเพื่อความชัวร์
+    app.use((req, res) => {
+        res.send(`Backend Server is Running! (Port: ${config.PORT})`);
     });
 }
 
@@ -84,6 +81,5 @@ if (fs.existsSync(distPath)) {
 startMqttWorker(io);
 
 server.listen(config.PORT, '0.0.0.0', () => {
-  console.log(`✅ Server ready on port ${config.PORT}`);
-  console.log(`📡 Allowed Origins: ${ALLOWED_ORIGINS.join(', ')}`);
+  console.log(`✅ [SUCCESS] Server is UP! No more PathErrors.`);
 });
