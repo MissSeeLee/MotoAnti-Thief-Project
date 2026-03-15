@@ -5,7 +5,7 @@ import { reactive } from "vue";
 // --- 1. กำหนด URL ของ Backend ---
 // ใช้ค่าจาก .env หรือถ้าไม่มีให้ใช้ URL ปัจจุบันของเว็บ
 const rawUrl = import.meta.env.VITE_API_URL || window.location.origin;
-const socketUrl = rawUrl.replace('/api', '');
+const socketUrl = rawUrl.replace(/\/api$/, '');
 
 // --- 2. สร้าง Reactive State สำหรับเก็บข้อมูลที่แชร์กันได้ทั้งแอป ---
 export const socketState = reactive({
