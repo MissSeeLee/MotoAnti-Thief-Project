@@ -45,9 +45,9 @@ export const register = async (req, res) => {
     // สร้าง User ใหม่
     const newUser = await prisma.user.create({
       data: {
-        username, // ใช้ Login
-        email,    // ใช้รับ Alert
-        phone: phone || '',   // ใช้รับ SMS
+        username, 
+        email,    
+        phone: phone || '',  
         password: hashedPassword,
         name: username,
         role: 'ADMIN',

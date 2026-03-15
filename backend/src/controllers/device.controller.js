@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid'; 
-import { sendCommand } from '../services/mqtt.service.js'; // ตรวจสอบว่าใน mqtt.service.js export ชื่อนี้จริง
+import { sendCommand } from '../services/mqtt.service.js'; // 
 import { sendEmergencyAlert } from '../utils/mailer.js';
 import  {getAlertsByDevice} from '../services/alert.service.js';
 const prisma = new PrismaClient();
