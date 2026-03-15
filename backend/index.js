@@ -54,8 +54,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api', shareRoutes); 
 
-// 🔥 [แก้ไขจุดตาย!] สำหรับ Express 5: เปลี่ยนจาก /api/* เป็น /api/:path*
-app.all('/api/:path*', (req, res) => {
+// 🔥 [จุดแก้สำคัญ 1] สำหรับ Express 5: 
+// ไม่ต้องใช้ดอกจันใน app.use ให้ใช้พาร์ทหลัก แล้วเช็กข้างในแทน
+app.use('/api', (req, res) => {
     res.status(404).json({ 
         error: "API Route Not Found", 
         path: req.originalUrl 
@@ -70,15 +71,13 @@ const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
     
-    // 🔥 [แก้ไขจุดตายที่ 2!] สำหรับ Express 5: ใช้ชื่อพารามิเตอร์แทน * โล่งๆ
-    app.get('/:any*', (req, res, next) => {
-        // ถ้าขึ้นต้นด้วย /api ให้ข้ามไปหาตัวจัดการ API 404 ด้านบน
-        if (req.path.startsWith('/api')) return next(); 
+    // 🔥 [จุดแก้สำคัญ 2] สำหรับ Express 5: ใช้ชื่อพารามิเตอร์คลุมทั้งหมด
+    app.get('/:path*', (req, res) => {
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
     app.get('/', (req, res) => {
-        res.send("Backend Server is Running!");
+        res.send("Backend Server is Running! (Port: " + config.PORT + ")");
     });
 }
 
@@ -88,6 +87,6 @@ if (fs.existsSync(distPath)) {
 startMqttWorker(io);
 
 server.listen(config.PORT, '0.0.0.0', () => {
-  console.log(`✅ Server FIXED for Express 5 (Port: ${config.PORT})`);
+  console.log(`✅ Server FIXED & Ready (Port: ${config.PORT})`);
   console.log(`📡 Allowed Origins: ${ALLOWED_ORIGINS.join(', ')}`);
 });
