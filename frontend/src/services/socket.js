@@ -20,6 +20,7 @@ export const socket = io(socketUrl, {
   reconnection: true,
   reconnectionAttempts: 10,
   reconnectionDelay: 2000,
+  withCredentials: true,
 });
 
 // --- 4. ดักฟังเหตุการณ์พื้นฐาน ---
