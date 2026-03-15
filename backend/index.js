@@ -54,8 +54,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api', shareRoutes); 
 
-// 🔥 [แก้ไขจุดตาย 1] สำหรับ Express 5: ใช้ Regex (.*) เพื่อดักจับพาร์ทที่เหลือของ API
-app.all('/api/(.*)', (req, res) => {
+// 🔥 [จุดแก้สำคัญ 1] สำหรับ Express 5: 
+// ห้ามใช้ /api/* หรือ /api/(.*) 
+// ให้ใช้ .use('/api', ...) เฉยๆ แล้ววางไว้ล่างสุดของกลุ่ม API
+// มันจะดักทุกอย่างที่ขึ้นต้นด้วย /api ที่ไม่ตรงกับ Route ด้านบนครับ
+app.use('/api', (req, res) => {
     res.status(404).json({ 
         error: "API Route Not Found", 
         path: req.originalUrl 
@@ -70,9 +73,9 @@ const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
     
-    // 🔥 [แก้ไขจุดตาย 2] สำหรับ Express 5: ใช้ (.*) ครอบทั้งหมดเพื่อทำ SPA Fallback
-    // นี่คือบรรทัดที่ 75 ที่เคยทำให้แอปพัง รอบนี้รอดชัวร์ครับ
-    app.get('(.*)', (req, res) => {
+    // 🔥 [จุดแก้สำคัญ 2] สำหรับ Express 5: 
+    // ใช้ Syntax :any* แทนการใช้เครื่องหมายวงเล็บเปล่าๆ
+    app.get('/:any*', (req, res) => {
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
@@ -87,6 +90,6 @@ if (fs.existsSync(distPath)) {
 startMqttWorker(io);
 
 server.listen(config.PORT, '0.0.0.0', () => {
-  console.log(`✅ [SUCCESS] Server FIXED for Express 5`);
-  console.log(`🚀 Running on port: ${config.PORT}`);
+    console.log(`✅ [FINAL FIX] Server is Up & Ready for Express 5`);
+    console.log(`🚀 Port: ${config.PORT}`);
 });
