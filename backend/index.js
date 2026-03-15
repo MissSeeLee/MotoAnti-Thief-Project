@@ -12,62 +12,71 @@ import deviceRoutes from './src/routes/device.routes.js';
 import shareRoutes from './src/routes/share.routes.js';
 import { startMqttWorker } from './src/services/mqtt.service.js'; 
 
-
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
 
-// ✅ 1. Setup Socket.IO
+// 1. กำหนด Origins ที่อนุญาตให้ชัดเจน
+const ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
+    "https://moto.artip.site", 
+    "https://motoanti-thief.artip.site"
+];
+
+// ✅ 1. Setup Socket.IO (ย้ายมาใช้ตัวแปร ALLOWED_ORIGINS)
 const io = new Server(server, {
   cors: {
-    // เพิ่มโดเมนใหม่เข้าไปในลิสต์ origin
-    origin: ["http://localhost:5173", "https://moto.artip.site", "https://motoanti-thief.artip.site"], 
+    origin: ALLOWED_ORIGINS, 
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  path: "/socket.io/"
 });
 
 // ✅ 2. Setup Middleware
 app.use(cors({
-    // เพิ่มโดเมนใหม่เข้าไปตรงนี้ด้วยครับ
-    origin: ["http://localhost:5173", "https://moto.artip.site", "https://motoanti-thief.artip.site"],
+    origin: ALLOWED_ORIGINS,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
-    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     credentials: true 
 }));
 
 app.use(express.json());
 
 // ==========================================
-// 🟢 ส่วนที่ 1: API Routes
+// 🟢 ส่วนที่ 1: API Routes (จัดลำดับใหม่ให้ชัดเจน)
 // ==========================================
+
+// ตรวจสอบสุขภาพ Server
+app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Backend is alive' }));
+
 app.use('/api/auth', authRoutes);
-app.use('/api', shareRoutes); 
 app.use('/api/devices', deviceRoutes);
+app.use('/api', shareRoutes); // shareRoutes ควรอยู่ล่างสุดของกลุ่ม /api ถ้ามันมี path ทับซ้อน
 
-
-// 🔥 แก้ไข 1: ดักจับ API 404 ด้วย Regex (ห้ามใช้สตริง)
-app.all(/^\/api\/.*$/, (req, res) => {
-    res.status(404).json({ error: "API Not Found (Backend is working)" });
+// 🔥 ดักจับ API 404 (เฉพาะที่ขึ้นต้นด้วย /api แต่หา route ไม่เจอ)
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ 
+        error: "API Route Not Found", 
+        path: req.originalUrl 
+    });
 });
 
 // ==========================================
-// 🟢 ส่วนที่ 2: Serve Frontend (Vue.js / Dist)
+// 🟢 ส่วนที่ 2: Serve Frontend (Static Files)
 // ==========================================
 const distPath = path.join(__dirname, 'dist');
 
 if (fs.existsSync(distPath)) {
-    // Serve Static Files
     app.use(express.static(distPath));
-    app.get(/.*/, (req, res) => {
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    // หน้าบ้าน SPA ต้อง fallback ไปที่ index.html
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api')) return next(); // ถ้าเป็น API ให้ข้ามไป
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
-    console.warn("⚠️  Warning: ไม่พบโฟลเดอร์ 'dist' (Frontend จะไม่แสดงผล)");
     app.get('/', (req, res) => {
         res.send("Backend Server is Running! (Frontend build not found)");
     });
@@ -79,6 +88,6 @@ if (fs.existsSync(distPath)) {
 startMqttWorker(io);
 
 server.listen(config.PORT, '0.0.0.0', () => {
-  console.log(`✅ Server FIXED for Express 5`);
-  console.log(`🚀 Server running on port ${config.PORT}`);
+  console.log(`✅ Server ready on port ${config.PORT}`);
+  console.log(`📡 Allowed Origins: ${ALLOWED_ORIGINS.join(', ')}`);
 });
